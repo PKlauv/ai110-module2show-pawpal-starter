@@ -4,8 +4,14 @@
 
 **a. Initial design**
 
-- Briefly describe your initial UML design.
-- What classes did you include, and what responsibilities did you assign to each?
+My initial UML design has four main classes: Task, Pet, Owner, and Scheduler. I used Python dataclasses for Task and Pet since they're mostly data holders, and regular classes for Owner and Scheduler since they have more complex behavior.
+
+- **Task** holds all the info for a single activity — what it is, when it happens, how long it takes, its priority level, and whether it repeats. It also tracks if it's been completed.
+- **Pet** represents a pet with basic info (name, species, age) and keeps a list of all its tasks. It can add/remove tasks and filter for pending ones.
+- **Owner** manages multiple pets. It's basically the entry point — you create an owner, add pets to them, and can pull all tasks across every pet at once.
+- **Scheduler** is the brain of the system. It takes an Owner and handles all the smart stuff like sorting tasks by time, filtering by pet or status, detecting conflicts, and managing recurring tasks.
+
+The relationships are pretty straightforward: an Owner has many Pets, each Pet has many Tasks, and the Scheduler works through the Owner to access everything. I kept it simple on purpose — didn't want to overcomplicate it with inheritance or anything when composition works fine here.
 
 **b. Design changes**
 
