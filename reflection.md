@@ -41,13 +41,17 @@ This is reasonable for a pet care app because most tasks are short (feeding, med
 
 **a. How you used AI**
 
-- How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
-- What kinds of prompts or questions were most helpful?
+I used AI pretty heavily throughout this project, mainly through VS Code Copilot. In the design phase, I described what the app needed to do and had Copilot generate a Mermaid.js class diagram, which saved a ton of time compared to drawing one from scratch. I used it to scaffold the initial class skeletons too — just gave it the UML and asked for Python dataclass stubs.
+
+During implementation, I used Copilot's inline suggestions and chat to flesh out methods. The most helpful prompts were specific ones like "how should the Scheduler retrieve all tasks from the Owner's pets?" rather than vague stuff like "write my scheduler." Asking it to explain *how* things should connect was way more useful than just asking it to write code.
+
+I also used separate chat sessions for different phases — one for design brainstorming, one for implementation questions, and one focused entirely on testing. That actually helped a lot because the context didn't get muddied up with unrelated stuff from earlier phases.
 
 **b. Judgment and verification**
 
-- Describe one moment where you did not accept an AI suggestion as-is.
-- How did you evaluate or verify what the AI suggested?
+When I asked Copilot to generate the conflict detection logic, it initially suggested checking every pair of tasks using nested loops — comparing all tasks against all other tasks regardless of pet. That would've flagged conflicts between tasks for different pets, which doesn't make sense (I can walk Mochi and feed Whiskers at the same time). I modified it to only flag conflicts when two tasks for the *same pet* are at the same time, using a dictionary keyed on `(pet_name, time)` which is also more efficient than the nested loop approach.
+
+I verified the change by adding specific test cases — one where the same pet has two tasks at the same time (should flag), and one where different pets have tasks at the same time (should not flag). Both passed, which confirmed the logic was right.
 
 ---
 
@@ -55,13 +59,20 @@ This is reasonable for a pet care app because most tasks are short (feeding, med
 
 **a. What you tested**
 
-- What behaviors did you test?
-- Why were these tests important?
+I wrote 20 automated tests covering the main behaviors:
+
+- **Basic operations**: Task completion status toggle, string representation, adding/removing tasks from pets, filtering pending tasks, adding/retrieving pets from an owner, aggregating tasks across pets.
+- **Sorting**: Verified that `sort_by_time()` returns tasks in chronological order and `sort_by_priority()` orders them high → medium → low.
+- **Filtering**: Tested filtering tasks by pet name and by completion status.
+- **Conflict detection**: Confirmed that two tasks at the same time for the same pet get flagged, but two tasks at the same time for different pets don't.
+- **Recurrence**: Verified that completing a daily task creates a new one for tomorrow, a weekly task creates one for next week, and a one-time task doesn't recur.
+- **Edge cases**: Tested a pet with no tasks, an owner with no pets, and a scheduler with an empty owner — all return empty lists without crashing.
+
+These tests are important because the scheduler has a lot of interconnected logic. Without tests, it'd be easy for a change in one method to silently break something else.
 
 **b. Confidence**
 
-- How confident are you that your scheduler works correctly?
-- What edge cases would you test next if you had more time?
+I'd give it a solid 4 out of 5 stars. The core scheduling, sorting, filtering, and recurrence all work correctly based on my tests. The main gap is the conflict detection only catches exact time matches, not overlapping time ranges. If I had more time, I'd test edge cases like tasks at midnight (00:00), tasks with zero duration, and what happens if you try to mark a task complete that doesn't exist.
 
 ---
 
@@ -69,12 +80,12 @@ This is reasonable for a pet care app because most tasks are short (feeding, med
 
 **a. What went well**
 
-- What part of this project are you most satisfied with?
+I'm most satisfied with how clean the architecture turned out. The separation between the logic layer (`pawpal_system.py`) and the UI (`app.py`) made development really smooth — I could test everything in the terminal with `main.py` before touching the Streamlit side. The CLI-first approach the assignment recommended actually works really well in practice.
 
 **b. What you would improve**
 
-- If you had another iteration, what would you improve or redesign?
+If I had another iteration, I'd redesign the conflict detection to check for overlapping time ranges instead of just exact matches. I'd also add data persistence — right now everything resets when you close the app because it's all in memory. Adding JSON save/load would make it actually usable day-to-day. The UI could also use some work — maybe a calendar view instead of just a table.
 
 **c. Key takeaway**
 
-- What is one important thing you learned about designing systems or working with AI on this project?
+The biggest thing I learned is that AI is most useful when you already know what you want to build. The UML-first approach forced me to think through the design before writing any code, and that made the AI suggestions way more useful because I could evaluate them against my design. When I just asked AI to "build a scheduler" without a clear plan, the suggestions were generic and often overcomplicated. But when I said "here's my UML, implement this specific method," the output was solid and I could verify it quickly. Being the architect — knowing the *what* and *why* — is what makes AI collaboration actually productive.
