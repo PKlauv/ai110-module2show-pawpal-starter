@@ -15,8 +15,9 @@ The relationships are pretty straightforward: an Owner has many Pets, each Pet h
 
 **b. Design changes**
 
-- Did your design change during implementation?
-- If yes, describe at least one change and why you made it.
+Yeah, a couple things changed once I started actually building it out. The biggest one was how the Scheduler interacts with tasks. Originally I had the Scheduler storing its own copy of tasks, but that got messy fast — if you marked something complete through the Scheduler, the Pet's task list wouldn't update. So I changed it so the Scheduler always goes through the Owner to get tasks. That way there's one source of truth and everything stays in sync.
+
+I also added a `due_date` field to Task that wasn't in my original UML. I realized I needed it for the recurrence logic — when you mark a daily task complete, the system needs to know what date to schedule the next one for, and just having a time string wasn't enough.
 
 ---
 
@@ -24,13 +25,15 @@ The relationships are pretty straightforward: an Owner has many Pets, each Pet h
 
 **a. Constraints and priorities**
 
-- What constraints does your scheduler consider (for example: time, priority, preferences)?
-- How did you decide which constraints mattered most?
+The scheduler considers three main constraints: time of day, priority level (high/medium/low), and task frequency (once, daily, weekly). Time is the primary sorting key for the daily schedule since a pet owner needs to see what comes first in the day. Priority is used as a secondary way to view tasks — you can sort by priority to see what's most urgent.
+
+I decided time mattered most because at the end of the day, a schedule needs to be chronological to be useful. Priority helps when you're deciding what to skip if you're short on time, but the default view should just be "what do I do next."
 
 **b. Tradeoffs**
 
-- Describe one tradeoff your scheduler makes.
-- Why is that tradeoff reasonable for this scenario?
+The biggest tradeoff is in conflict detection — my scheduler only flags exact time matches rather than checking for overlapping durations. So if you have a 60-minute vet appointment at 9:00 and a walk at 9:30, the system won't catch that overlap. It only warns you if two tasks for the same pet are both at exactly 9:00.
+
+This is reasonable for a pet care app because most tasks are short (feeding, medication) and owners usually schedule them at distinct times. Implementing full duration-based overlap detection would add a lot of complexity for a case that doesn't come up that often in practice. If I had more time, I'd probably add it, but for now the exact-match approach catches the most common mistake — accidentally double-booking the same time slot.
 
 ---
 
